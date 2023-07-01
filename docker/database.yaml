@@ -1,0 +1,42 @@
+version: '3.8'
+
+volumes:
+  mariadb:
+  mongodb:
+
+
+
+services:
+  mariadb:
+    image: checkstore_mariadb
+    restart: unless-stopped
+    ports:
+      - 3308:3306
+    environment:
+      - MARIADB_ROOT_USER=root
+      - MARIADB_ROOT_PASSWORD=CheckStore1992
+      - MARIADB_USER=checkstore
+      - MARIADB_PASSWORD=CheckStore1992
+      - MARIADB_DATABASE=checkstore
+    volumes:
+      - /var/lib/mysql
+
+
+#  mongodb:
+#    image: checkstore_mongodb
+#    container_name: checkstore_mongodb
+#    hostname: mongodb
+#    restart: unless-stopped
+#    ports:
+#      - 27018:27017
+#    environment:
+#      - MONGODB_USERNAME=admin
+#      - MONGODB_PASSWORD=CheckStore1992
+#
+#    volumes:
+#      - /data/configdb
+
+
+
+
+

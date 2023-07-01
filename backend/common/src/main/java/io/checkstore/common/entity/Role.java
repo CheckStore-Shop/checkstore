@@ -1,0 +1,68 @@
+package io.checkstore.common.entity;
+
+import io.checkstore.common.CommonConstants;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import one.util.streamex.StreamEx;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.MappedCollection;
+import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.util.CollectionUtils;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
+@Setter
+@Getter
+@NoArgsConstructor
+
+@Table(value = CommonConstants.EntityName.ROLE)
+public class Role extends AbstractJdbcEntity<Long>{
+
+//    protected Long id;
+    private String name;
+    private String description;
+    private Integer status;
+
+    @Transient
+    Set<Authority> authorities;
+
+    @MappedCollection(idColumn = "role_id")
+    private Set<RoleUserRef> userRefs;
+
+    @MappedCollection(idColumn = "role_id")
+    private Set<RoleAuthorityRef> authorityRefs;
+
+
+
+    public Role(Long id, String name, String description, Integer status, Set<Authority> authorities,
+                Set<RoleUserRef> userRefs, Set<RoleAuthorityRef> authorityRefs){
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.authorities = authorities;
+        this.userRefs = Objects.requireNonNullElse(userRefs, new HashSet<>());
+        this.authorityRefs = Objects.requireNonNullElse(authorityRefs, fromAuthorities(authorities));
+    }
+
+    private Set<RoleAuthorityRef> fromAuthorities(Set<Authority> authorities){
+        if (CollectionUtils.isEmpty(authorities)) return new HashSet<>();
+        return StreamEx.of(authorities)
+                .filter(Objects::nonNull)
+                .map(Authority::getId)
+                .map(RoleAuthorityRef::new)
+                .toSet();
+    }
+
+    public Collection<Long> authorityIds() {
+        if (CollectionUtils.isEmpty(authorityRefs)) return Set.of();
+        return StreamEx.of(authorityRefs)
+                .map(RoleAuthorityRef::getAuthorityId)
+                .toImmutableSet();
+    }
+}
